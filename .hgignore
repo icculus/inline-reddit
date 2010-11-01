@@ -1,2 +1,4 @@
 syntax:glob
 rss/cache
+rss/processed-rss.xml
+
