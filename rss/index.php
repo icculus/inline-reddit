@@ -150,7 +150,7 @@ function verify_cache($fname, $url, $maxage)
 //  each individual RSS download ends up taking several seconds, so we'll live
 //  with slightly outdated results to make this site more responsive.
 $cachefname = 'processed-rss.xml';
-if (!verify_cache($cachefname, 'http://www.reddit.com/.rss', 60 * 5))
+if (!verify_cache($cachefname, 'http://www.reddit.com/.rss', 60))
 {
     header('HTTP/1.0 503 Service unavailable');
     header('Connection: close');
