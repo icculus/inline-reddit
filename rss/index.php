@@ -1,6 +1,8 @@
 <?php
 
 define('MAGPIE_OUTPUT_ENCODING', 'UTF-8');
+define('MAGPIE_CACHE_ON', false);
+define('MAGPIE_FETCH_TIME_OUT', 30); // 30 second timeout
 
 require_once 'magpierss/rss_fetch.inc';
 
@@ -148,7 +150,7 @@ function verify_cache($fname, $url, $maxage)
 //  each individual RSS download ends up taking several seconds, so we'll live
 //  with slightly outdated results to make this site more responsive.
 $cachefname = 'processed-rss.xml';
-if (!verify_cache($cachefname, 'http://www.reddit.com/.rss', 60))
+if (!verify_cache($cachefname, 'http://www.reddit.com/.rss', 60 * 5))
 {
     header('HTTP/1.0 503 Service unavailable');
     header('Connection: close');
