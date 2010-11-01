@@ -90,6 +90,9 @@ function recache($fname, $url)
            '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"' .
            ' xmlns:media="http://search.yahoo.com/mrss/"><channel>');
 
+    $rss->channel['title'] = 'inline ' . $rss->channel['title'];
+    $rss->image['title'] = 'inline ' . $rss->image['title'];
+
     doWriteXml($ok, $io, $rss->channel);
     doWrite($ok, $io, '<image>');
     doWriteXml($ok, $io, $rss->image);
