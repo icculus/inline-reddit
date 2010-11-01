@@ -57,17 +57,42 @@ $items = $rss->getItems();
 foreach ($items as $index => $item)
 {
     $desc = $item['description'];
-print($item['title'] . "\n");
     if (preg_match('/\<br\/\>\s*\<a href=\"(.*?)\"\>\[link\]\<\/a\>/', $desc, $matches) > 0)
     {
-        $m = $matches[1];
-        print("  + matched '$m'\n");
+        $credithtml = '';
+        $appendimg = false;
+        $url = $matches[1];
+        $ext = strrchr($url, '.');
+        if ($ext === false)
+        {
+            // pull imgur image out of base URL.
+            $imgurbase = 'http://imgur.com/';
+            $len = strlen($imgurbase);  // !!! FIXME: move this elsewhere.
+            if (strncasecmp($url, $imgurbase, $len) == 0)
+            {
+                $credithtml = "<br/><center><font size='-2'><a href='$url'>view this at imgur.com</a></font></center>";
+                $url .= '.jpg';
+            } // if
+        } // if
+        else
+        {
+            if (strcasecmp($ext, '.jpg') == 0)
+                $appendimg = true;
+            else if (strcasecmp($ext, '.png') == 0)
+                $appendimg = true;
+            else if (strcasecmp($ext, '.gif') == 0)
+                $appendimg = true;
+        } // else
+
+        // !!! FIXME: YouTube, etc.
+
+        if ($appendimg)
+            $desc .= "\n<br/><hr/><center><img src='$url'/></center>\n";
+        $desc .= $credithtml;
     }
-else
-{
-print("  - no match\n");
-}
-//<a href="http://i.imgur.com/VS4vg.jpg">[link]</a>
+
+    #print "-----\n$desc\n";
+    $item['description'] = $desc;
 } // foreach
 
 ?>
