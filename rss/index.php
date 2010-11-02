@@ -81,8 +81,8 @@ function process_item($item, $url)
 
     $desc = $item['description'];
     if ($appendimg)
-        $desc .= "<br/><hr/><center><img src='$url'/></center>";
-        //$desc .= "<br/><hr/><center><img src='$url' style='max-width: 100%;'/></center>";
+        //$desc .= "<br/><hr/><center><img src='$url'/></center>";
+        $desc .= "<br/><hr/><img src='$url' style='max-width: 100%;'/>";
     $desc .= $credithtml;
 
     return $desc;
