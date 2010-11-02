@@ -1,4 +1,3 @@
 syntax:glob
-rss/cache
-rss/processed-rss.xml
+feed/processed-rss.xml
 
