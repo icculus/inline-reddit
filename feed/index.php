@@ -163,8 +163,7 @@ function verify_cache($fname, $url, $maxage)
 //  each individual RSS download ends up taking several seconds, so we'll live
 //  with slightly outdated results to make this site more responsive.
 $cachefname = 'processed-rss.xml';
-// Use Google Reader's republication of reddit's stream, since they can spare the resources.  :)
-$feedurl = 'http://www.google.com/reader/public/atom/feed/http://reddit.com/.rss';
+$feedurl = 'http://reddit.com/.rss';
 if (!verify_cache($cachefname, $feedurl, 60))
 {
     header('HTTP/1.0 503 Service unavailable');
