@@ -48,6 +48,7 @@ function doWriteXml(&$ok, $io, $arr)
 // This is where most of the magic happens.
 function process_item($item, $url)
 {
+    $morehtml = '';
     $credithtml = '';
     $appendimg = false;
     $ext = strrchr($url, '/');      // skip past protocol, hosts, paths, etc...
@@ -56,13 +57,25 @@ function process_item($item, $url)
 
     if ($ext === false)  // no filename extension on this URL?
     {
-        $imgurbase = 'http://imgur.com/';
-        $imgurbaselen = strlen($imgurbase);
-
-        // pull imgur image out of base URL.
-        if (strncasecmp($url, $imgurbase, $imgurbaselen) == 0)
+        if (preg_match('/^.*?\:\/\/(.*?\.|)imgur.com\/.*$/', $url) > 0)
         {
-            $credithtml = "<br/><center><font size='-2'><a href='$url'>view this at imgur.com</a></font></center>";
+            // pull imgur image out of base URL.
+            $appendimg = true;
+            $credithtml = "<br/><font size='-2'><a href='$url'>view this at imgur.com</a></font>";
+            $url .= '.jpg';
+        } // if
+        else if (preg_match('/^.*?\:\/\/(.*?\.|)youtube.com\/.*$/', $url) > 0)
+        {
+            // pull youtube video out of base URL.
+            $url = preg_replace('/\/watch\?v\=/', '/v/', $url, 1);
+            $morehtml = "<br/><hr/><object width='480' height='385'>" .
+                        "<param name='movie' value='$url'></param>" .
+                        "<param name='allowscriptaccess' value='always'></param>" .
+                        "<embed src='$url' type='application/x-shockwave-flash'" .
+                        " allowscriptaccess='always' width='480' height='385'>" .
+                        "</embed></object>";
+
+            $credithtml = "<br/><font size='-2'><a href='$url'>view this at youtube.com</a></font>";
             $url .= '.jpg';
         } // if
     } // if
@@ -71,18 +84,20 @@ function process_item($item, $url)
     {
         if (strcasecmp($ext, '.jpg') == 0)
             $appendimg = true;
+        else if (strcasecmp($ext, '.jpeg') == 0)
+            $appendimg = true;
         else if (strcasecmp($ext, '.png') == 0)
             $appendimg = true;
         else if (strcasecmp($ext, '.gif') == 0)
             $appendimg = true;
     } // else
 
-    // !!! FIXME: Handle YouTube, etc.
+    // !!! FIXME: Handle yfrog, etc.
 
     $desc = $item['description'];
     if ($appendimg)
-        //$desc .= "<br/><hr/><center><img src='$url'/></center>";
         $desc .= "<br/><hr/><img src='$url' style='max-width: 100%;'/>";
+    $desc .= $morehtml;
     $desc .= $credithtml;
 
     return $desc;
