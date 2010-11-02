@@ -132,7 +132,7 @@ function recache($subreddit, $fname, $url)
     $title = "inline reddit: $subreddit";
 
     $channel = array(
-        title => $feed->title,
+        title => $title,
         link => $oururl,
         tagline => '',  // !!! FIXME: ?
     );
