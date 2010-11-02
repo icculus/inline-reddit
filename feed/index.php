@@ -1,6 +1,6 @@
 <?php
 
-set_include_path('./XML_Feed_Parser' . PATH_SEPARATOR . get_include_path());
+set_include_path('../../pear/php' . PATH_SEPARATOR . './XML_Feed_Parser' . PATH_SEPARATOR . get_include_path());
 require_once 'XML/Feed/Parser.php';
 
 // !!! FIXME: there has got to be a better way to do this. Maybe move to
