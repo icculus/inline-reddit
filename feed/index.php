@@ -1,10 +1,7 @@
 <?php
 
-define('MAGPIE_OUTPUT_ENCODING', 'UTF-8');
-define('MAGPIE_CACHE_ON', false);
-define('MAGPIE_FETCH_TIME_OUT', 30); // 30 second timeout
-
-require_once 'magpierss/rss_fetch.inc';
+set_include_path('./XML_Feed_Parser' . PATH_SEPARATOR . get_include_path());
+require_once 'XML/Feed/Parser.php';
 
 // !!! FIXME: there has got to be a better way to do this. Maybe move to
 // !!! FIXME:  the formal XML writer classes.
@@ -94,7 +91,7 @@ function process_item($item, $url)
 
     // !!! FIXME: Handle yfrog, etc.
 
-    $desc = $item['description'];
+    $desc = $item['summary'];
     if ($appendimg)
         $desc .= "<br/><hr/><img src='$url' style='max-width: 100%;'/>";
     $desc .= $morehtml;
@@ -104,11 +101,22 @@ function process_item($item, $url)
 } // process_item
 
 
-function recache($fname, $url)
+function recache($subreddit, $fname, $url)
 {
-    $rss = fetch_rss($url);
-    if ($rss === false)
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $xmldata = curl_exec($ch);
+    curl_close($ch);
+    if ($xmldata === false)
         return false;
+
+    try {
+        $feed = new XML_Feed_Parser($xmldata, false, true, true);
+    } catch (XML_Feed_Parser_Exception $e) {
+        //die('Feed invalid: ' . $e->getMessage());
+        return false;
+    }
 
     // !!! FIXME: This is all pretty ghetto.
     $tmpfname = "tmp-" . getmypid();
@@ -120,20 +128,45 @@ function recache($fname, $url)
            '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"' .
            ' xmlns:media="http://search.yahoo.com/mrss/"><channel>');
 
-    $rss->channel['title'] = 'inline reddit';
-    $rss->image['title'] = 'inline reddit';
+    $oururl = $_SERVER['PHP_SELF'];
+    $title = "inline reddit: $subreddit";
 
-    doWriteXml($ok, $io, $rss->channel);
+    $channel = array(
+        title => $feed->title,
+        link => $oururl,
+        tagline => '',  // !!! FIXME: ?
+    );
+
+    $image = array(   // !!! FIXME
+        url => 'http://static.reddit.com/reddit.com.header.png',
+        title => $title,
+        link => $oururl,
+    );
+
+    $items = array();
+    foreach ($feed as $item)
+    {
+        $items[] = array(
+            guid => $item->id,
+            title => $item->title,
+            link => $item->link,
+            summary => $item->summary,
+            description => $item->summary,
+            pubdate => $item->pubDate,
+        );
+    } // foreach
+
+    doWriteXml($ok, $io, $channel);
     doWrite($ok, $io, '<image>');
-    doWriteXml($ok, $io, $rss->image);
+    doWriteXml($ok, $io, $image);
     doWrite($ok, $io, '</image>');
 
-    $pattern = '/\<br\/\>\s*\<a href=\"(.*?)\"\>\[link\]\<\/a\>/';
-    foreach ($rss->items as $item)
+    $pattern = '/\<br\>\s*\<a href=\"(.*?)\"\>\[link\]\<\/a\>/';
+    foreach ($items as $item)
     {
-        $desc = $item['description'];
         if (!$ok)
             break;
+        $desc = $item['summary'];
         if (preg_match($pattern, $desc, $matches) > 0)
             $desc = process_item($item, $matches[1]);
         unset($matches);
@@ -160,12 +193,12 @@ function recache($fname, $url)
 } // recache
 
 
-function verify_cache($fname, $url, $maxage)
+function verify_cache($fname, $url, $subreddit, $maxage)
 {
-    $rc = @filemtime($fname);
+    $rc = (($maxage < 0) ? false : @filemtime($fname));
     $retval = true;
     if ( ($rc === false) || (($rc + $maxage) < time()) )
-        $retval = recache($fname, $url);
+        $retval = recache($subreddit, $fname, $url);
     return $retval;
 } // verify_cache
 
@@ -178,8 +211,19 @@ function verify_cache($fname, $url, $maxage)
 //  each individual RSS download ends up taking several seconds, so we'll live
 //  with slightly outdated results to make this site more responsive.
 $cachefname = 'processed-rss.xml';
-$feedurl = 'http://reddit.com/.rss';
-if (!verify_cache($cachefname, $feedurl, 60))
+
+$feedurl = 'http://reddit.com/';
+
+// !!! FIXME: handle subreddits: "http://reddit.com/r/AskReddit/.rss"
+$subreddit = 'front page';
+$feedurl .= '.rss';
+
+// Use Google Reader's republication of reddit's stream, since they can spare
+//  the resources.  :)   Also, they tend to pick up items that pop into
+//  reddit's RSS feed for a brief time, so you get more content in general.
+$feedurl = "http://www.google.com/reader/public/atom/feed/$feedurl";
+// !!! FIXME: up the cache time, this is set to -1 for debugging right now.
+if (!verify_cache($cachefname, $feedurl, $subreddit, -1))
 {
     header('HTTP/1.0 503 Service unavailable');
     header('Connection: close');
@@ -192,4 +236,3 @@ header('Content-Type: text/xml; charset=UTF-8');
 @readfile($cachefname);  // dump the XML we generated to the client and gtfo.
 
 ?>
-
