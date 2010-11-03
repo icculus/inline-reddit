@@ -1,0 +1,15 @@
+<Files .htaccess>
+Order deny,allow
+Deny from all
+</Files>
+
+<Files .hg>
+Order deny,allow
+Deny from all
+</Files>
+
+<Files .hgignore>
+Order deny,allow
+Deny from all
+</Files>
+
