@@ -1,3 +1,4 @@
 syntax:glob
 feed/processed-rss.xml
+feed/*-processed-rss.xml
 
