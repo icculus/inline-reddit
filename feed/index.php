@@ -231,8 +231,7 @@ $feedurl .= '.rss';
 //  the resources.  :)   Also, they tend to pick up items that pop into
 //  reddit's RSS feed for a brief time, so you get more content in general.
 $feedurl = "http://www.google.com/reader/public/atom/feed/$feedurl";
-// !!! FIXME: up the cache time, this is set to -1 for debugging right now.
-if (!verify_cache($cachefname, $feedurl, $subreddit, -1))
+if (!verify_cache($cachefname, $feedurl, $subreddit, 60))
 {
     header('HTTP/1.0 503 Service unavailable');
     header('Connection: close');
