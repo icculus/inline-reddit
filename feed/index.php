@@ -211,11 +211,20 @@ function verify_cache($fname, $url, $subreddit, $maxage)
 //  each individual RSS download ends up taking several seconds, so we'll live
 //  with slightly outdated results to make this site more responsive.
 $cachefname = 'processed-rss.xml';
-
+$subreddit = 'front page';
 $feedurl = 'http://reddit.com/';
 
-// !!! FIXME: handle subreddits: "http://reddit.com/r/AskReddit/.rss"
-$subreddit = 'front page';
+if (isset($_REQUEST['subreddit']))
+{
+    $str = $_REQUEST['subreddit'];
+    if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9]+$/', $str) == 1))
+    {
+        $cachefname = "$str-$cachefname";
+        $feedurl .= "r/$str/";
+        $subreddit = $str;
+    } // if
+} // if
+
 $feedurl .= '.rss';
 
 // Use Google Reader's republication of reddit's stream, since they can spare
