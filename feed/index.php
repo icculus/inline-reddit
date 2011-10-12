@@ -54,14 +54,14 @@ function process_item($item, $url)
 
     if ($ext === false)  // no filename extension on this URL?
     {
-        if (preg_match('/^.*?\:\/\/(.*?\.|)imgur.com\/.*$/', $url) > 0)
+        if (preg_match('/^.*?\:\/\/(.*?\.|)imgur\.com\/.*$/', $url) > 0)
         {
             // pull imgur image out of base URL.
             $appendimg = true;
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at imgur.com</a></font>";
             $url .= '.jpg';
         } // if
-        else if (preg_match('/^.*?\:\/\/(.*?\.|)youtube.com\/.*$/', $url) > 0)
+        else if (preg_match('/^.*?\:\/\/(.*?\.|)youtube\.com\/.*$/', $url) > 0)
         {
             // pull youtube video out of base URL.
             $url = preg_replace('/\/watch\?v\=/', '/v/', $url, 1);
