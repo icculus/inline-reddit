@@ -75,6 +75,14 @@ function process_item($item, $url)
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at youtube.com</a></font>";
             $url .= '.jpg';
         } // if
+        else if (preg_match('/^.*?\:\/\/(.*?\.|)(quickmeme\.com\/meme|qkme\.me)\/(.*?)(\/|$)/', $url, $matches) > 0)
+        {
+            // pull quickmeme image out of base URL.
+            $appendimg = true;
+            $credithtml = "<br/><font size='-2'><a href='$url'>view this at quickmeme.com</a></font>";
+            $imgid = $matches[3];
+            $url = "http://i.qkme.me/$imgid.jpg";
+        } // else if
     } // if
 
     else  // URL filename has an extension.
