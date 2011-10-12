@@ -73,7 +73,6 @@ function process_item($item, $url)
                         "</embed></object>";
 
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at youtube.com</a></font>";
-            $url .= '.jpg';
         } // if
         else if (preg_match('/^.*?\:\/\/(.*?\.|)(quickmeme\.com\/meme|qkme\.me)\/(.*?)(\/|$)/', $url, $matches) > 0)
         {
