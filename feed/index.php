@@ -237,6 +237,55 @@ if (isset($_REQUEST['subreddit']))
 
 $feedurl .= '.rss';
 
+// Private feeds look like this:
+//  http://www.reddit.com/.rss?feed=<some_sha1_looking_hash>=&user=<your_reddit_login_name>
+// This exposes your private feeds to the world! Use these at your own risk!
+if (isset($_REQUEST['feed']))
+{
+    if (isset($_REQUEST['subreddit']))
+    {
+        header('HTTP/1.0 400 Bad Request');
+        header('Connection: close');
+        header('Content-Type: text/plain');
+        print("\n\nCan't specify a subreddit AND a feed.\n\n");
+        exit(0);
+    } // if
+
+    if (!isset($_REQUEST['user']))
+    {
+        header('HTTP/1.0 400 Bad Request');
+        header('Connection: close');
+        header('Content-Type: text/plain');
+        print("\n\nRequested feed without username.\n\n");
+        exit(0);
+    } // if
+
+    $feed = $_REQUEST['feed'];
+    if ((strlen($feed) != 40) || (preg_match('/^[a-zA-Z0-9]+$/', $feed) != 1))
+    {
+        header('HTTP/1.0 400 Bad Request');
+        header('Connection: close');
+        header('Content-Type: text/plain');
+        print("\n\nBogus feed hash.\n\n");
+        exit(0);
+    } // if
+
+    $user = $_REQUEST['user'];
+    if ((strlen($user) > 64) || (preg_match('/^[a-zA-Z0-9\-_]+$/', $user) != 1))
+    {
+        header('HTTP/1.0 400 Bad Request');
+        header('Connection: close');
+        header('Content-Type: text/plain');
+        print("\n\nBogus feed username.\n\n");
+        exit(0);
+    } // if
+
+    $cachefname = "feed-$feed-user-$user-$cachefname";
+    $feedurl .= "?feed=$feed&user=$user";
+    $subreddit = "private feed $feed for user $user";
+    $use_google = false;
+} // if
+
 // Use Google Reader's republication of reddit's stream, since they can spare
 //  the resources.  :)   Also, they tend to pick up items that pop into
 //  reddit's RSS feed for a brief time, so you get more content in general.

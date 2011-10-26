@@ -45,10 +45,18 @@ I use it with <a href="http://reader.google.com/">Google Reader</a>, but it
 should work with any feed catcher.
 
 <p>
-<b>subreddits:</b>You get them like this:
+<b>subreddits:</b> You get them like this:
 <a href="feed/?subreddit=AskReddit">
 http://inline-reddit.com/feed/?subreddit=AskReddit
 </a>
+
+<p>
+<b>private feeds:</b> You get the feed info <a href="http://www.reddit.com/prefs/feeds/">here</a>, and use it like this:<br/>
+http://inline-reddit.com/feed/?feed=&lt;some_sha1_looking_hash&gt;&amp;user=&lt;your_reddit_login_name&gt;<br/>
+<b>DO THIS AT YOUR OWN RISK.</b><br/>
+This means we'll be republishing possibly-personal information.<br/>
+If you give these URLs to Google Reader, they will be discoverable by search.</br>
+If you change your password, the URLs will change too, but Google Reader caches any old feed items forever.
 
 <p>
 <b>source code:</b>
