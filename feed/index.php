@@ -219,6 +219,7 @@ function verify_cache($fname, $url, $subreddit, $maxage)
 // We only want to talk to Reddit's servers once every X seconds at most, as
 //  each individual RSS download ends up taking several seconds, so we'll live
 //  with slightly outdated results to make this site more responsive.
+$use_google = true;  // get this from Google Reader's cache by default.
 $cachefname = 'processed-rss.xml';
 $subreddit = 'front page';
 $feedurl = 'http://reddit.com/';
@@ -239,7 +240,9 @@ $feedurl .= '.rss';
 // Use Google Reader's republication of reddit's stream, since they can spare
 //  the resources.  :)   Also, they tend to pick up items that pop into
 //  reddit's RSS feed for a brief time, so you get more content in general.
-$feedurl = "http://www.google.com/reader/public/atom/feed/$feedurl";
+if ($use_google)
+    $feedurl = "http://www.google.com/reader/public/atom/feed/$feedurl";
+
 if (!verify_cache($cachefname, $feedurl, $subreddit, 60))
 {
     header('HTTP/1.0 503 Service unavailable');
