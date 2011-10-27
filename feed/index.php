@@ -170,14 +170,14 @@ function recache($subreddit, $fname, $url)
     doWriteXml($ok, $io, $image);
     doWrite($ok, $io, '</image>');
 
-    $pattern = '/\<br\>\s*\<a href=\"(.*?)\"\>\[link\]\<\/a\>/';
+    $pattern = '/\<br(\/|)\>\s*\<a\s*href=\"(.*?)\"\>\[link\]\<\/a\>/';
     foreach ($items as $item)
     {
         if (!$ok)
             break;
         $desc = $item['summary'];
         if (preg_match($pattern, $desc, $matches) > 0)
-            $desc = process_item($item, $matches[1]);
+            $desc = process_item($item, $matches[2]);
         unset($matches);
 
         $item['summary'] = $desc;
