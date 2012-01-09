@@ -48,11 +48,14 @@ function process_item($item, $url)
     $morehtml = '';
     $credithtml = '';
     $appendimg = false;
-    $ext = strrchr($url, '/');      // skip past protocol, hosts, paths, etc...
-    if ($ext !== false)
-        $ext = strrchr($ext, '.');  //  ... and get the filename extension.
 
-    if ($ext === false)  // no filename extension on this URL?
+    // Ignore URL arguments (so we know that Amazon AWS is a simple image URL).
+    $ext = $url;
+    $ext = preg_replace('/\?.*/', '', $ext, 1);
+    // extract file extension, if any.
+    $ext = preg_replace('/^.*(\..*)$/', '$1', $ext, 1);
+
+    if ($ext === NULL)  // no filename extension on this URL?
     {
         if (preg_match('/^.*?\:\/\/(.*?\.|)imgur\.com\/.*$/', $url) > 0)
         {
