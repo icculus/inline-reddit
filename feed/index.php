@@ -74,6 +74,19 @@ function process_item($item, $url)
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at imgur.com</a></font>";
             $url .= '.jpg';
         } // if
+        else if (preg_match('/^.*?\:\/\/(.*?\.|)youtu\.be\/.*$/', $url) > 0)   // stupid youtube short url.
+        {
+            // pull youtube video out of base URL.
+            $url = preg_replace('/^(.*)\/youtu\.be\/(.*)$/', '$1/youtube.com/v/$2', $url, 1);
+            $morehtml = "<br/><hr/><object width='480' height='385'>" .
+                        "<param name='movie' value='$url'></param>" .
+                        "<param name='allowscriptaccess' value='always'></param>" .
+                        "<embed src='$url' type='application/x-shockwave-flash'" .
+                        " allowscriptaccess='always' width='480' height='385'>" .
+                        "</embed></object>";
+
+            $credithtml = "<br/><font size='-2'><a href='$url'>view this at youtube.com</a></font>";
+        } // else if
         else if (preg_match('/^.*?\:\/\/(.*?\.|)youtube\.com\/.*$/', $url) > 0)
         {
             // pull youtube video out of base URL.
