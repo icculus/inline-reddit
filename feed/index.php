@@ -100,7 +100,7 @@ function process_item($item, $url)
 
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at youtube.com</a></font>";
         } // if
-        else if (preg_match('/^.*?\:\/\/(.*?\.|)(quickmeme\.com\/meme|qkme\.me)\/(.*?)(\/|\?id=\d+$)/', $url, $matches) > 0)
+        else if (preg_match('/^.*?\:\/\/(.*?\.|)(quickmeme\.com\/meme|qkme\.me)\/(\?id=\d+$|[0-9-A-Za-z]+)\/?/', $url, $matches) > 0)
         {
             // pull quickmeme image out of base URL.
             $appendimg = true;
