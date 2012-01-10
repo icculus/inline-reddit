@@ -52,12 +52,18 @@ function process_item($item, $url)
     $appendimg = false;
 
     // Ignore URL arguments (so we know that Amazon AWS is a simple image URL).
+    $debugext = false;
     $ext = $url;
+    if ($debugext) print("ext start: '$ext'\n");
     $ext = preg_replace('/\?.*/', '', $ext, 1);
+    if ($debugext) print("ext minus args: '$ext'\n");
     $ext = preg_replace('/^.*\//', '', $ext, 1);  // drop all paths
-    $ext = preg_replace('/^.*(\..*|)$/', '$1', $ext, 1);  // extract file extension, if any.
+    if ($debugext) print("ext minus paths: '$ext'\n");
+    $ext = preg_replace('/^.*(\..*)$/', '$1', $ext, 1);  // extract file extension, if any.
+    if ($ext[0] != '.') $ext = '';
+    if ($debugext) print("ext minus everything: '$ext'\n");
 
-    #print("<pre>url is '$url', ext is '$ext'</pre>\n");
+    if ($debugext) print("url is '$url', ext is '$ext'\n");
 
     if (($ext == NULL) || (strlen($ext) == 0))  // no filename extension on this URL?
     {
