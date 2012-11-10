@@ -253,6 +253,7 @@ $feedurl = 'http://reddit.com/';
 
 if (isset($_REQUEST['subreddit']))
 {
+    $use_google = false;   // these tend to be broken on Google Reader.  :/
     $str = $_REQUEST['subreddit'];
     if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9]+$/', $str) == 1))
     {
