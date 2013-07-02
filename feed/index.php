@@ -246,7 +246,7 @@ function verify_cache($fname, $url, $subreddit, $maxage)
 // We only want to talk to Reddit's servers once every X seconds at most, as
 //  each individual RSS download ends up taking several seconds, so we'll live
 //  with slightly outdated results to make this site more responsive.
-$use_google = true;  // get this from Google Reader's cache by default.
+$use_google = false;  // get this from Google Reader's cache by default.
 $cachefname = 'processed-rss.xml';
 $subreddit = 'front page';
 $feedurl = 'http://reddit.com/';
