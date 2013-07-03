@@ -181,13 +181,16 @@ function recache($subreddit, $fname, $url)
     $items = array();
     foreach ($feed as $item)
     {
+        $pubdate = $item->pubDate;
+        $dt = new DateTime("@$pubdate");
+        $pubdatefmt = $dt->format(DateTime::RSS);
         $items[] = array(
             guid => $item->id,
             title => $item->title,
             link => $item->link,
             summary => $item->summary,
             description => $item->summary,
-            pubdate => $item->pubDate,
+            pubdate => $pubdatefmt
         );
     } // foreach
 
