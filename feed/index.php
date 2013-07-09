@@ -108,6 +108,14 @@ function process_item($item, $url)
             $imgid = $matches[3];
             $url = "http://i.qkme.me/$imgid.jpg";
         } // else if
+        else if (preg_match('/^.*?\:\/\/(.*?\.|)livememe\.com\/(.*?)$/', $url, $matches) > 0)
+        {
+            // pull livememe image out of base URL.
+            $appendimg = true;
+            $credithtml = "<br/><font size='-2'><a href='$url'>view this at livememe.com</a></font>";
+            $imgid = $matches[2];
+            $url = "http://i.lvme.me/$imgid.jpg";
+        } // else if
     } // if
 
     else  // URL filename has an extension.
