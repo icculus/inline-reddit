@@ -67,12 +67,17 @@ function process_item($item, $url)
 
     if (($ext == NULL) || (strlen($ext) == 0))  // no filename extension on this URL?
     {
-        if (preg_match('/^.*?\:\/\/(.*?\.|)imgur\.com\/.*$/', $url) > 0)
+        if (preg_match('/^.*?\:\/\/(.*?\.|)imgur\.com\/(.*)$/', $url, $matches) > 0)
         {
             // pull imgur image out of base URL.
-            $appendimg = true;
-            $credithtml = "<br/><font size='-2'><a href='$url'>view this at imgur.com</a></font>";
-            $url .= '.jpg';
+            $appendimg = (strncmp($matches[2], 'a/', 2) != 0);  // don't append albums.
+            if (!$appendimg)
+                $credithtml = "<br/><font size='-2'><a href='$url'>view this album at imgur.com</a></font>";
+            else
+            {
+                $credithtml = "<br/><font size='-2'><a href='$url'>view this image at imgur.com</a></font>";
+                $url .= '.jpg';
+            } // else
         } // if
         else if (preg_match('/^.*?\:\/\/(.*?\.|)youtu\.be\/.*$/', $url) > 0)   // stupid youtube short url.
         {
