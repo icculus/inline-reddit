@@ -271,7 +271,7 @@ if (isset($_REQUEST['subreddit']))
 {
     $use_google = false;   // these tend to be broken on Google Reader.  :/
     $str = $_REQUEST['subreddit'];
-    if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9]+$/', $str) == 1))
+    if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9\-_]+$/', $str) == 1))
     {
         $cachefname = "$str-$cachefname";
         $feedurl .= "r/$str/";
@@ -302,7 +302,7 @@ else if (isset($_REQUEST['multireddit']))
     } // if
 
     $str = $_REQUEST['multireddit'];
-    if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9]+$/', $str) == 1))
+    if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9\-_]+$/', $str) == 1))
     {
         $cachefname = "multireddit-user-$user-$str-$cachefname";
         $cachefname = "$str-$cachefname";
