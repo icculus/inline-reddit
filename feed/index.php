@@ -278,6 +278,39 @@ if (isset($_REQUEST['subreddit']))
         $subreddit = $str;
     } // if
 } // if
+else if (isset($_REQUEST['multireddit']))
+{
+    $use_google = false;   // these tend to be broken on Google Reader.  :/
+
+    if (!isset($_REQUEST['user']))
+    {
+        header('HTTP/1.0 400 Bad Request');
+        header('Connection: close');
+        header('Content-Type: text/plain');
+        print("\n\nRequested multireddit without username.\n\n");
+        exit(0);
+    } // if
+
+    $user = $_REQUEST['user'];
+    if ((strlen($user) > 64) || (preg_match('/^[a-zA-Z0-9\-_]+$/', $user) != 1))
+    {
+        header('HTTP/1.0 400 Bad Request');
+        header('Connection: close');
+        header('Content-Type: text/plain');
+        print("\n\nBogus multireddit username.\n\n");
+        exit(0);
+    } // if
+
+    $str = $_REQUEST['multireddit'];
+    if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9]+$/', $str) == 1))
+    {
+        $cachefname = "multireddit-user-$user-$str-$cachefname";
+        $cachefname = "$str-$cachefname";
+        $name = "user/$user/m/$str";
+        $feedurl .= $name;
+        $subreddit = "Multireddit $name";
+    } // if
+} // if
 
 $feedurl .= '.rss';
 
