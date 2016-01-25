@@ -48,12 +48,14 @@ function doWriteXml(&$ok, $io, $arr)
 // This is where most of the magic happens.
 function process_item($item, $url)
 {
+    global $staging;
+
     $morehtml = '';
     $credithtml = '';
     $appendimg = false;
 
     // Ignore URL arguments (so we know that Amazon AWS is a simple image URL).
-    $debugext = false;
+    $debugext = $staging;
     $ext = $url;
     if ($debugext) print("ext start: '$ext'\n");
     $ext = preg_replace('/\?.*/', '', $ext, 1);
@@ -152,6 +154,8 @@ function recache($subreddit, $fname, $url)
 {
     global $staging;
 
+    if ($staging) print("RECACHE: subreddit='$subreddit' fname='$fname' url='$url'\n");
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -203,6 +207,7 @@ function recache($subreddit, $fname, $url)
         $pubdate = $item->pubDate;
         $dt = new DateTime("@$pubdate");
         $pubdatefmt = $dt->format(DateTime::RSS);
+        if ($staging) { print("SUMMARY: '{$item->summary}'\n"); print_r($item->summary); }
         $items[] = array(
             guid => $item->id,
             title => $item->title,
@@ -219,11 +224,13 @@ function recache($subreddit, $fname, $url)
     doWrite($ok, $io, '</image>');
 
     $pattern = '/\<br(\/|)\>\s*\<a\s*href=\"(.*?)\"\>\[link\]\<\/a\>/';
+    if ($staging) print("pattern items must match to be considered: '$pattern'\n");
     foreach ($items as $item)
     {
         if (!$ok)
             break;
         $desc = $item['summary'];
+        if ($staging) print("item to consider: '$desc'\n");
         if (preg_match($pattern, $desc, $matches) > 0)
             $desc = process_item($item, $matches[2]);
         unset($matches);
@@ -272,6 +279,12 @@ $use_google = false;  // get this from Google Reader's cache by default.
 $cachefname = 'processed-rss.xml';
 $subreddit = 'front page';
 $feedurl = 'http://reddit.com/';
+
+if ($staging)
+{
+    header('Content-Type: text/plain; charset=UTF-8');
+    print("\n\n\nSTAGING!\n\n\n");
+} // else
 
 if (isset($_REQUEST['subreddit']))
 {
@@ -387,13 +400,10 @@ if (!verify_cache($cachefname, $feedurl, $subreddit, 60))
     exit(0);
 } // if
 
-if (!$staging)
-    header('Content-Type: text/xml; charset=UTF-8');
+if ($staging)
+    print("\n\nXML output follows...\n\n\n");
 else
-{
-    header('Content-Type: text/plain; charset=UTF-8');
-    print("\n\n\nSTAGING!\n\n\n");
-} // else
+    header('Content-Type: text/xml; charset=UTF-8');
 
 @readfile($cachefname);  // dump the XML we generated to the client and gtfo.
 
