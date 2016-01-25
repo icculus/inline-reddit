@@ -89,27 +89,17 @@ function process_item($item)
         else if (preg_match('/^.*?\:\/\/(.*?\.|)youtu\.be\/.*$/', $url) > 0)   // stupid youtube short url.
         {
             // pull youtube video out of base URL.
-            $url = preg_replace('/^(.*)\/youtu\.be\/(.*)$/', '$1/youtube.com/v/$2', $url, 1);
-            $morehtml = "<br/><hr/><object width='480' height='385'>" .
-                        "<param name='movie' value='$url'></param>" .
-                        "<param name='allowscriptaccess' value='always'></param>" .
-                        "<embed src='$url' type='application/x-shockwave-flash'" .
-                        " allowscriptaccess='always' width='480' height='385'>" .
-                        "</embed></object>";
-
+            $embedurl = preg_replace('/^(.*)\/youtu\.be\/(.*)$/', '$1/www.youtube.com/embed/$2', $url, 1);
+            $url = preg_replace('/^(.*)\/youtu\.be\/(.*)$/', '$1/www.youtube.com/watch?v=$2', $url, 1);
+            $morehtml = "<br/><hr/><iframe width='560' height='315' src='$embedurl' frameborder='0' allowfullscreen></iframe>";
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at youtube.com</a></font>";
         } // else if
         else if (preg_match('/^.*?\:\/\/(.*?\.|)youtube\.com\/.*$/', $url) > 0)
         {
             // pull youtube video out of base URL.
-            $url = preg_replace('/\/watch\?v\=/', '/v/', $url, 1);
-            $morehtml = "<br/><hr/><object width='480' height='385'>" .
-                        "<param name='movie' value='$url'></param>" .
-                        "<param name='allowscriptaccess' value='always'></param>" .
-                        "<embed src='$url' type='application/x-shockwave-flash'" .
-                        " allowscriptaccess='always' width='480' height='385'>" .
-                        "</embed></object>";
-
+            $embedurl = preg_replace('/^(.*)\/.*?youtube.com\/(.*)$/', '$1/www.youtube.com/embed/$2', $url, 1);
+            $url = preg_replace('/^(.*)\/.*?youtube.com\/(.*)$/', '$1/www.youtube.com/watch?v=$2', $url, 1);
+            $morehtml = "<br/><hr/><iframe width='560' height='315' src='$embedurl' frameborder='0' allowfullscreen></iframe>";
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at youtube.com</a></font>";
         } // if
         else if (preg_match('/^.*?\:\/\/(.*?\.|)(quickmeme\.com\/meme|qkme\.me)\/(\?id=\d+$|[0-9-A-Za-z]+)\/?/', $url, $matches) > 0)
