@@ -4,6 +4,7 @@ set_include_path('../../pear/php' . PATH_SEPARATOR . './XML_Feed_Parser' . PATH_
 require_once 'XML/Feed/Parser.php';
 
 $disable_cache = true;
+$staging = false;
 
 // !!! FIXME: there has got to be a better way to do this. Maybe move to
 // !!! FIXME:  the formal XML writer classes.
@@ -149,6 +150,8 @@ function process_item($item, $url)
 
 function recache($subreddit, $fname, $url)
 {
+    global $staging;
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -177,7 +180,10 @@ function recache($subreddit, $fname, $url)
            ' xmlns:media="http://search.yahoo.com/mrss/"><channel>');
 
     $oururl = $_SERVER['PHP_SELF'];
+
     $title = "inline reddit: $subreddit";
+    if ($staging)
+        $title = "[STAGING] $title";
 
     $channel = array(
         title => $title,
@@ -246,10 +252,10 @@ function recache($subreddit, $fname, $url)
 
 function verify_cache($fname, $url, $subreddit, $maxage)
 {
-    global $disable_cache;
+    global $disable_cache, $staging;
     $rc = (($maxage < 0) ? false : @filemtime($fname));
     $retval = true;
-    if ( $disable_cache || ($rc === false) || (($rc + $maxage) < time()) )
+    if ( $disable_cache || $staging || ($rc === false) || (($rc + $maxage) < time()) )
         $retval = recache($subreddit, $fname, $url);
     return $retval;
 } // verify_cache
@@ -369,6 +375,9 @@ if (isset($_REQUEST['feed']))
 if ($use_google)
     $feedurl = "http://www.google.com/reader/public/atom/feed/$feedurl";
 
+if ($staging)
+    $cachefname = "$cachefname-staging";
+
 if (!verify_cache($cachefname, $feedurl, $subreddit, 60))
 {
     header('HTTP/1.0 503 Service unavailable');
@@ -378,7 +387,17 @@ if (!verify_cache($cachefname, $feedurl, $subreddit, 60))
     exit(0);
 } // if
 
-header('Content-Type: text/xml; charset=UTF-8');
+if (!$staging)
+    header('Content-Type: text/xml; charset=UTF-8');
+else
+{
+    header('Content-Type: text/plain; charset=UTF-8');
+    print("\n\n\nSTAGING!\n\n\n");
+} // else
+
 @readfile($cachefname);  // dump the XML we generated to the client and gtfo.
+
+if ($staging)
+    unlink($cachefname);  // staging!
 
 ?>
