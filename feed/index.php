@@ -1,10 +1,8 @@
 <?php
 
-set_include_path('../../pear/php' . PATH_SEPARATOR . './XML_Feed_Parser' . PATH_SEPARATOR . get_include_path());
-require_once 'XML/Feed/Parser.php';
-
 $disable_cache = true;
-$staging = false;
+$staging = $_SERVER['PHP_SELF'] == '/feed/staging.php';
+//$staging = false;
 
 // !!! FIXME: there has got to be a better way to do this. Maybe move to
 // !!! FIXME:  the formal XML writer classes.
@@ -46,16 +44,21 @@ function doWriteXml(&$ok, $io, $arr)
 
 
 // This is where most of the magic happens.
-function process_item($item, $url)
+function process_item($item)
 {
     global $staging;
+
+    $debugext = $staging;
+
+    if ($staging) { print("PROCESS ITEM...\n"); print_r($item); }
+
+    $url = $item['link'];
 
     $morehtml = '';
     $credithtml = '';
     $appendimg = false;
 
     // Ignore URL arguments (so we know that Amazon AWS is a simple image URL).
-    $debugext = $staging;
     $ext = $url;
     if ($debugext) print("ext start: '$ext'\n");
     $ext = preg_replace('/\?.*/', '', $ext, 1);
@@ -68,6 +71,7 @@ function process_item($item, $url)
 
     if ($debugext) print("url is '$url', ext is '$ext'\n");
 
+    // !!! FIXME: force some of these to https?
     if (($ext == NULL) || (strlen($ext) == 0))  // no filename extension on this URL?
     {
         if (preg_match('/^.*?\:\/\/(.*?\.|)imgur\.com\/(.*)$/', $url, $matches) > 0)
@@ -126,23 +130,43 @@ function process_item($item, $url)
         } // else if
     } // if
 
-    else  // URL filename has an extension.
+    // URL filename has an extension?
+    else if (strcasecmp($ext, '.jpg') == 0)
+        $appendimg = true;
+    else if (strcasecmp($ext, '.jpeg') == 0)
+        $appendimg = true;
+    else if (strcasecmp($ext, '.png') == 0)
+        $appendimg = true;
+    else if (strcasecmp($ext, '.gif') == 0)
+        $appendimg = true;
+
+    if (!$appendimg && empty($morehtml) && !empty($item['thumbnail']))  // oh well, use reddit's thumbnail if there is one.
     {
-        if (strcasecmp($ext, '.jpg') == 0)
+        if ($staging) print("USE THE THUMBNAIL\n");
+        if (strncasecmp($item['thumbnail'], 'http', 4) == 0)   // probably a URL and not 'nsfw' or 'self', etc
+        {
             $appendimg = true;
-        else if (strcasecmp($ext, '.jpeg') == 0)
-            $appendimg = true;
-        else if (strcasecmp($ext, '.png') == 0)
-            $appendimg = true;
-        else if (strcasecmp($ext, '.gif') == 0)
-            $appendimg = true;
-    } // else
+            $url = $item['thumbnail'];
+        } // if
+    } // else if
 
     // !!! FIXME: Handle yfrog, etc.
 
     $desc = $item['summary'];
+    $appenddesc = '';
     if ($appendimg)
-        $desc .= "<br/><hr/><img src='$url' style='max-width: 100%;'/>";
+    {
+        $appenddesc = "<br/><hr/><img src='$url' style='max-width: 100%;'/>";
+        $desc .= $appenddesc;
+    }
+
+    if ($staging)
+    {
+        print("DESC APPEND: '$appenddesc'\n");
+        print("DESC MORE HTML: '$morehtml'\n");
+        print("DESC CREDIT HTML: '$credithtml'\n");
+    } // if
+
     $desc .= $morehtml;
     $desc .= $credithtml;
 
@@ -161,17 +185,14 @@ function recache($subreddit, $fname, $url)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
-    $xmldata = curl_exec($ch);
+    $jsondata = curl_exec($ch);
     curl_close($ch);
-    if ($xmldata === false)
+    if ($jsondata === false)
         return false;
 
-    try {
-        $feed = new XML_Feed_Parser($xmldata, false, true, true);
-    } catch (XML_Feed_Parser_Exception $e) {
-        //die('Feed invalid: ' . $e->getMessage());
+    $json = json_decode($jsondata);
+    if (($json == NULL) || ($json->kind != 'Listing'))
         return false;
-    }
 
     // !!! FIXME: This is all pretty ghetto.
     $tmpfname = "tmp-" . getmypid();
@@ -202,19 +223,30 @@ function recache($subreddit, $fname, $url)
     );
 
     $items = array();
-    foreach ($feed as $item)
+    foreach ($json->data->children as $obj)
     {
-        $pubdate = $item->pubDate;
+        $item = $obj->data;
+
+        $nsfw = $item->over_18 ? "<font color='#FF0000'>[NSFW]</font>" : '';
+
+        $desc = <<<EOF
+<a href='{$item->url}'>{$item->title}</a> (<a href='https://www.reddit.com/domain/{$item->domain}/'>{$item->domain}</a>)<br/>
+submitted by <a href='https://www.reddit.com/user/{$item->author}'>{$item->author}</a> to <a href='https://www.reddit.com/r/{$item->subreddit}'>/r/{$item->subreddit}</a><br/>
+$nsfw <a href='https://www.reddit.com/{$item->permalink}'>{$item->num_comments} comments</a>
+EOF;
+
+        $pubdate = $item->created_utc;
         $dt = new DateTime("@$pubdate");
         $pubdatefmt = $dt->format(DateTime::RSS);
-        if ($staging) { print("SUMMARY: '{$item->summary}'\n"); print_r($item->summary); }
+
         $items[] = array(
-            guid => $item->id,
+            guid => "http://www.reddit.com/{$item->permalink}",  // this matches the guid we used when scraping the RSS feeds.
             title => $item->title,
-            link => $item->link,
-            summary => $item->summary,
-            description => $item->summary,
-            pubdate => $pubdatefmt
+            link => $item->url,
+            summary => $desc,
+            description => $desc,
+            pubdate => $pubdatefmt,
+            thumbnail => $item->thumbnail
         );
     } // foreach
 
@@ -223,20 +255,16 @@ function recache($subreddit, $fname, $url)
     doWriteXml($ok, $io, $image);
     doWrite($ok, $io, '</image>');
 
-    $pattern = '/\<br(\/|)\>\s*\<a\s*href=\"(.*?)\"\>\[link\]\<\/a\>/';
-    if ($staging) print("pattern items must match to be considered: '$pattern'\n");
     foreach ($items as $item)
     {
         if (!$ok)
             break;
-        $desc = $item['summary'];
-        if ($staging) print("item to consider: '$desc'\n");
-        if (preg_match($pattern, $desc, $matches) > 0)
-            $desc = process_item($item, $matches[2]);
-        unset($matches);
 
+        $desc = process_item($item);
         $item['summary'] = $desc;
         $item['description'] = $desc;
+
+        unset($item['thumbnail']);  // don't put this in the final XML output.
 
         doWrite($ok, $io, '<item>');
         doWriteXml($ok, $io, $item);
@@ -331,10 +359,10 @@ else if (isset($_REQUEST['multireddit']))
     } // if
 } // if
 
-$feedurl .= '.rss';
+$feedurl .= '.json';
 
 // Private feeds look like this:
-//  http://www.reddit.com/.rss?feed=<some_sha1_looking_hash>=&user=<your_reddit_login_name>
+//  http://www.reddit.com/.json?feed=<some_sha1_looking_hash>&user=<your_reddit_login_name>
 // This exposes your private feeds to the world! Use these at your own risk!
 if (isset($_REQUEST['feed']))
 {
