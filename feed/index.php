@@ -212,6 +212,8 @@ function recache($subreddit, $fname, $url)
         link => $oururl,
     );
 
+    $linktothread = ((isset($_REQUEST['linktothread'])) && (intval($_REQUEST['linktothread']) != 0));
+
     $items = array();
     foreach ($json->data->children as $obj)
     {
@@ -219,10 +221,14 @@ function recache($subreddit, $fname, $url)
 
         $nsfw = $item->over_18 ? "<font color='#FF0000'>[NSFW]</font>" : '';
 
+        $permalink = "https://www.reddit.com/{$item->permalink}";
+        $itemurl = $item->url;
+        $titleurl = $linktothread ? $permalink : $itemurl;
+
         $desc = <<<EOF
-<a href='{$item->url}'>{$item->title}</a> (<a href='https://www.reddit.com/domain/{$item->domain}/'>{$item->domain}</a>)<br/>
+<a href='$titleurl'>{$item->title}</a> (<a href='https://www.reddit.com/domain/{$item->domain}/'>{$item->domain}</a>)<br/>
 submitted by <a href='https://www.reddit.com/user/{$item->author}'>{$item->author}</a> to <a href='https://www.reddit.com/r/{$item->subreddit}'>/r/{$item->subreddit}</a><br/>
-$nsfw <a href='https://www.reddit.com/{$item->permalink}'>{$item->num_comments} comments</a>
+$nsfw <a href='$permalink'>{$item->num_comments} comments</a> <a href='$itemurl'>original</a>
 EOF;
 
         $pubdate = $item->created_utc;
@@ -230,9 +236,9 @@ EOF;
         $pubdatefmt = $dt->format(DateTime::RSS);
 
         $items[] = array(
-            guid => "http://www.reddit.com/{$item->permalink}",  // this matches the guid we used when scraping the RSS feeds.
+            guid => $permalink,  // this matches the guid we used when scraping the RSS feeds.
             title => $item->title,
-            link => $item->url,
+            link => $titleurl,
             summary => $desc,
             description => $desc,
             pubdate => $pubdatefmt,
