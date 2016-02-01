@@ -118,6 +118,14 @@ function process_item($item)
             $imgid = $matches[2];
             $url = "http://i.lvme.me/$imgid.jpg";
         } // else if
+        else if (preg_match('/^.*?\:\/\/gfycat\.com\/(.*?)$/', $url, $matches) > 0)
+        {
+            // pull gfycat image out of base URL.
+            $appendimg = true;
+            $credithtml = "<br/><font size='-2'><a href='$url'>view this at gfycat.com</a></font>";
+            $imgid = $matches[1];
+            $url = "http://giant.gfycat.com/$imgid.gif";
+        } // else if
     } // if
 
     // URL filename has an extension?
