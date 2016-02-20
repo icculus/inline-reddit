@@ -137,6 +137,16 @@ function process_item($item)
         $appendimg = true;
     else if (strcasecmp($ext, '.gif') == 0)
         $appendimg = true;
+    else if (strcasecmp($ext, '.gifv') == 0)  // imgur "video"?
+    {
+        $embedurl = preg_replace('/^(.*?\:\/\/)(.*?\.|)(imgur\.com\/)(.*)\.gifv$/', '$1$2$3$4.gif', $url, 1);
+        if ($embedurl != $url)
+        {
+            $credithtml = "<br/><font size='-2'><a href='$url'>view this video at imgur.com</a></font>";
+            $appendimg = true;
+            $url = $embedurl;
+        } // if
+    } // else if
 
     if (!$appendimg && empty($morehtml) && !empty($item['thumbnail']))  // oh well, use reddit's thumbnail if there is one.
     {
