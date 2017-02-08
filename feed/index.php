@@ -66,7 +66,7 @@ function process_item($item)
     $ext = preg_replace('/^.*\//', '', $ext, 1);  // drop all paths
     if ($debugext) print("ext minus paths: '$ext'\n");
     $ext = preg_replace('/^.*(\..*)$/', '$1', $ext, 1);  // extract file extension, if any.
-    if ($ext[0] != '.') $ext = '';
+    if (isset($ext) && (strlen($ext) > 0) && ($ext[0] != '.')) $ext = '';
     if ($debugext) print("ext minus everything: '$ext'\n");
 
     if ($debugext) print("url is '$url', ext is '$ext'\n");
@@ -219,15 +219,15 @@ function recache($subreddit, $fname, $url)
         $title = "[STAGING] $title";
 
     $channel = array(
-        title => $title,
-        link => $oururl,
-        tagline => '',  // !!! FIXME: ?
+        'title' => $title,
+        'link' => $oururl,
+        'tagline' => '',  // !!! FIXME: ?
     );
 
     $image = array(   // !!! FIXME
-        url => 'http://static.reddit.com/reddit.com.header.png',
-        title => $title,
-        link => $oururl,
+        'url' => 'http://static.reddit.com/reddit.com.header.png',
+        'title' => $title,
+        'link' => $oururl,
     );
 
     $linktothread = ((isset($_REQUEST['linktothread'])) && (intval($_REQUEST['linktothread']) != 0));
@@ -254,13 +254,13 @@ EOF;
         $pubdatefmt = $dt->format(DateTime::RSS);
 
         $items[] = array(
-            guid => $permalink,  // this matches the guid we used when scraping the RSS feeds.
-            title => $item->title,
-            link => $titleurl,
-            summary => $desc,
-            description => $desc,
-            pubdate => $pubdatefmt,
-            thumbnail => $item->thumbnail
+            'guid' => $permalink,  // this matches the guid we used when scraping the RSS feeds.
+            'title' => $item->title,
+            'link' => $titleurl,
+            'summary' => $desc,
+            'description' => $desc,
+            'pubdate' => $pubdatefmt,
+            'thumbnail' => $item->thumbnail
         );
     } // foreach
 
