@@ -332,7 +332,7 @@ if (isset($_REQUEST['subreddit']))
 {
     $use_google = false;   // these tend to be broken on Google Reader.  :/
     $str = $_REQUEST['subreddit'];
-    if ((strlen($str) < 32) && (preg_match('/^[a-zA-Z0-9\-_]+$/', $str) == 1))
+    if ((strlen($str) < 32) && (preg_match('/^[\\a-zA-Z0-9\-_]+$/', $str) == 1))
     {
         $cachefname = "$str-$cachefname";
         $feedurl .= "r/$str/";
@@ -432,6 +432,9 @@ if ($use_google)
 
 if ($staging)
     $cachefname = "$cachefname-staging";
+
+// make sure "subreddit/sorting" doesn't look like a subdir.
+$cachefname = strtr($cachefname, '/', '_');
 
 if (!verify_cache($cachefname, $feedurl, $subreddit, 60))
 {
