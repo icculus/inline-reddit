@@ -124,7 +124,7 @@ function process_item($item)
             $appendimg = true;
             $credithtml = "<br/><font size='-2'><a href='$url'>view this at gfycat.com</a></font>";
             $imgid = $matches[1];
-            $url = "http://giant.gfycat.com/$imgid.gif";
+            $url = "https://thumbs.gfycat.com/$imgid-size_restricted.gif";
         } // else if
     } // if
 
