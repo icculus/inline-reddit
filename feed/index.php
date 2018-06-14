@@ -239,7 +239,8 @@ function recache($subreddit, $fname, $url)
 
         $nsfw = $item->over_18 ? "<font color='#FF0000'>[NSFW]</font>" : '';
 
-        $permalink = "https://www.reddit.com/{$item->permalink}";
+        $maybeslash = (substr($item->permalink, 0, 1) == '/') ? '' : '/';
+        $permalink = "https://www.reddit.com{$maybeslash}{$item->permalink}";
         $itemurl = $item->url;
         $titleurl = $linktothread ? $permalink : $itemurl;
 
