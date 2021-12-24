@@ -260,7 +260,7 @@ EOF;
             'link' => $titleurl,
             'summary' => $desc,
             'description' => $desc,
-            'pubdate' => $pubdatefmt,
+            'pubDate' => $pubdatefmt,
             'thumbnail' => $item->thumbnail
         );
     } // foreach
