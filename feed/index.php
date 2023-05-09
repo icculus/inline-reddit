@@ -193,6 +193,7 @@ function recache($subreddit, $fname, $url)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
     curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+    curl_setopt($ch, CURLOPT_USERAGENT, "php:inline-reddit.com:v1.1.7");
     $jsondata = curl_exec($ch);
     curl_close($ch);
     if ($jsondata === false)
