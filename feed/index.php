@@ -1,6 +1,6 @@
 <?php
 
-$disable_cache = true;
+$disable_cache = false;
 $staging = $_SERVER['PHP_SELF'] == '/feed/staging.php';
 //$staging = false;
 
@@ -437,7 +437,7 @@ if ($staging)
 // make sure "subreddit/sorting" doesn't look like a subdir.
 $cachefname = strtr($cachefname, '/', '_');
 
-if (!verify_cache($cachefname, $feedurl, $subreddit, 60))
+if (!verify_cache($cachefname, $feedurl, $subreddit, 60 * 10))
 {
     header('HTTP/1.0 503 Service unavailable');
     header('Connection: close');
