@@ -198,9 +198,19 @@ function recache($subreddit, $fname, $url)
     if ($jsondata === false)
         return false;
 
+    if ($staging) { print("RECACHE: raw json:\n\n$jsondata\n\n"); }
+
     $json = json_decode($jsondata);
-    if (($json == NULL) || ($json->kind != 'Listing'))
+    if (($json == NULL) || ($json->kind != 'Listing')) {
+        if ($staging) {
+            if ($json == NULL) {
+                print("RECACHE: json is NULL\n");
+            } else if ($json->kind != 'Listing') {
+                print("RECACHE: json->kind == '" . $json->kind . "'\n");
+            }
+        }
         return false;
+    }
 
     // !!! FIXME: This is all pretty ghetto.
     $tmpfname = "tmp-" . getmypid();
@@ -305,6 +315,9 @@ function verify_cache($fname, $url, $subreddit, $maxage)
     global $disable_cache, $staging;
     $rc = (($maxage < 0) ? false : @filemtime($fname));
     $retval = true;
+
+    if ($staging) { print("VERIFY_CACHE: disable_cache=$disable_cache, maxage=$maxage, rc=$rc, subreddit=$subreddit, url=$url\n"); }
+
     if ( $disable_cache || $staging || ($rc === false) || (($rc + $maxage) < time()) )
         $retval = recache($subreddit, $fname, $url);
     return $retval;
